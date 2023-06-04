@@ -10,23 +10,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const bearerToken = req.headers['authorization'] as string;
-  if (!bearerToken) {
-    return res
-      .status(401)
-      .json({ errorMessage: 'Unauthorized request (No found in token)' });
-  }
-
   const token = bearerToken.split(' ')[1];
-
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-  try {
-    await jose.jwtVerify(token, secret);
-  } catch (error) {
-    return res
-      .status(401)
-      .json({ errorMessage: 'Unauthorized request (invailed token)' });
-  }
-
   const payload = jwt.decode(token) as { email: string };
 
   if (!payload.email) {
