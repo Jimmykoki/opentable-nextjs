@@ -5,9 +5,10 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
-import { render } from 'react-dom';
 import AuthModalInput from './AuthModalInput';
 import useAuth from '@/hooks/useAuth';
+import { AuthenticationContext } from '../context/AuthContext';
+import { Alert, CircularProgress } from '@mui/material';
 
 export interface Users {
   firstName: string;
@@ -50,6 +51,7 @@ export default function AuthModal({ isSignin }: { isSignin: boolean }) {
     return isSignin ? signinContent : signupContent;
   };
 
+  const { loading, error, data } = useContext(AuthenticationContext);
   const [user, setUser] = useState(userInfo);
   const [disabled, setDisabled] = useState(true);
   const { signIn, signUp } = useAuth();
@@ -80,7 +82,9 @@ export default function AuthModal({ isSignin }: { isSignin: boolean }) {
 
   const handleClick = () => {
     if (isSignin) {
-      signIn({ email: user.email, password: user.password });
+      signIn({ email: user.email, password: user.password }, handleClose);
+    } else {
+      signUp(user, handleClose);
     }
   };
 
@@ -102,34 +106,44 @@ export default function AuthModal({ isSignin }: { isSignin: boolean }) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style} className="rounded">
-          <div className="p-2 h-[600px]">
-            <div className="uppercased font-bold text-center pb-2 border-b mb-2">
-              <p className="text-sm">
-                {renderContentIfSignin('Sign in', 'Create Account')}
-                {user.firstName}
-              </p>
+          {loading ? (
+            <div className="py-24 p-2 h-[600px] flex justify-center">
+              <CircularProgress />
             </div>
-            <div className="m-auto">
-              <h2 className="text-2xl font-light text-center">
-                {renderContentIfSignin(
-                  'Log Into Your Account',
-                  'Create Your OpenTable Account'
-                )}
-              </h2>
-              <AuthModalInput
-                user={user}
-                handleChangesInput={handleChangesInput}
-                isSignin={isSignin}
-              />
-              <button
-                className="uppercase bg-red-600 w-full text-white p-3 rounded text-sm mb-5 disabled:bg-gray-400"
-                disabled={disabled}
-                onClick={handleClick}
-              >
-                {renderContentIfSignin('Sign in', 'Create Account')}
-              </button>
+          ) : (
+            <div className="p-2 h-[600px]">
+              <div className="uppercased font-bold text-center pb-2 border-b mb-2">
+                <p className="text-xl">
+                  {renderContentIfSignin('Sign in', 'Create Account')}
+                </p>
+              </div>
+              <div className="m-auto">
+                <h2 className="text-2xl font-light text-center">
+                  {renderContentIfSignin(
+                    'Log Into Your Account',
+                    'Create Your OpenTable Account'
+                  )}
+                </h2>
+                <AuthModalInput
+                  user={user}
+                  handleChangesInput={handleChangesInput}
+                  isSignin={isSignin}
+                />
+                {error ? (
+                  <Alert severity="error" className="mb-4">
+                    {error}
+                  </Alert>
+                ) : null}
+                <button
+                  className="uppercase bg-red-600 w-full text-white p-3 rounded text-sm mb-5 disabled:bg-gray-400"
+                  disabled={disabled}
+                  onClick={handleClick}
+                >
+                  {renderContentIfSignin('Sign in', 'Create Account')}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </Box>
       </Modal>
     </div>
