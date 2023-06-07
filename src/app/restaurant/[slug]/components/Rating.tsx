@@ -1,6 +1,6 @@
 import Stars from '@/app/components/Stars';
 import { Review } from '@prisma/client';
-import { calculateRivewRating } from 'utils/calculateReviewRating';
+import { calculateRivewRating } from '@/utils/calculateReviewRating';
 
 export default function Rating({ reviews }: { reviews: Review[] }) {
   return (

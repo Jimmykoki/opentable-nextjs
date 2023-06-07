@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { RestaurantCardType } from '@/app/page';
 import Price from '@/app/components/Price';
-import { calculateRivewRating } from 'utils/calculateReviewRating';
+import { calculateRivewRating } from '@/utils/calculateReviewRating';
 import Stars from '@/app/components/Stars';
 
 export default function RestaurantCard({
