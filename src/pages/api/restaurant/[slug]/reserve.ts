@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { findAvailabileTables } from '../../../../services/restaurant/findAvailableTables';
+import { findAvailabileTables } from '@/services/restaurant/findAvailableTables';
 
 const prisma = new PrismaClient();
 
