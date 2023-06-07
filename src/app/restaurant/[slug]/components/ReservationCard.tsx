@@ -1,21 +1,46 @@
 'use client';
-import { partySize, times } from '@/data';
+import { partySize as partySizes, times } from '@/data';
+import useAvailabilities from '@/hooks/useAvailabilities';
+import { convertToDisplayTime, Time } from '@/utils/converToDisplayTimes';
+import { CircularProgress } from '@mui/material';
+import Link from 'next/link';
 import { useState } from 'react';
 import DatePicker from 'react-datepicker';
 
 export default function ReservationCard({
   openTime,
   closeTime,
+  slug,
 }: {
   openTime: string;
   closeTime: string;
+  slug: string;
 }) {
+  const { data, loading, error, fetchAvailabilities } = useAvailabilities();
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string>(openTime);
+  const [partySize, setPartySize] = useState<string>('2');
+  const [day, setDay] = useState<string>(
+    new Date().toISOString().split('T')[0]
+  );
+
+  console.log({ data });
+
   const handleChangeDate = (date: Date | null) => {
     if (date) {
+      setDay(date.toISOString().split('T')[0]);
       return setSelectedDate(date);
     }
     return setSelectedDate(null);
+  };
+
+  const handleClick = () => {
+    fetchAvailabilities({
+      slug,
+      day,
+      time: selectedTime,
+      partySize,
+    });
   };
 
   const filterTimeByRestaurantOpenWindow = () => {
@@ -43,8 +68,14 @@ export default function ReservationCard({
       </div>
       <div className="my-3 flex flex-col">
         <label htmlFor="">Party size</label>
-        <select name="" id="" className="py-3 border-b font-light">
-          {partySize.map((size) => (
+        <select
+          name=""
+          id=""
+          className="py-3 border-b font-light"
+          value={partySize}
+          onChange={(e) => setPartySize(e.target.value)}
+        >
+          {partySizes.map((size) => (
             <option value={size.value}>{size.label}</option>
           ))}
         </select>
@@ -62,7 +93,13 @@ export default function ReservationCard({
         </div>
         <div className="flex flex-col w-[48%]">
           <label htmlFor="">Time</label>
-          <select name="" id="" className="py-3 border-b font-light">
+          <select
+            name=""
+            id=""
+            className="py-3 border-b font-light"
+            value={selectedTime}
+            onChange={(e) => setSelectedTime(e.target.value)}
+          >
             {filterTimeByRestaurantOpenWindow().map((time) => (
               <option value={time.time}>{time.displayTime}</option>
             ))}
@@ -70,10 +107,35 @@ export default function ReservationCard({
         </div>
       </div>
       <div className="mt-5">
-        <button className="bg-red-600 rounded w-full px-4 text-white font-bold h-16">
-          Find a Time
+        <button
+          className="bg-red-600 rounded w-full px-4 text-white font-bold h-16"
+          onClick={handleClick}
+          disabled={loading}
+        >
+          {loading ? <CircularProgress color="inherit" /> : 'Find a Time'}
         </button>
       </div>
+      {data && data.length ? (
+        <div className="mt-4">
+          <p className="text-reg">Select a Time</p>
+          <div className="flex flex-wrap mt-2">
+            {data.map((time) => {
+              return time.available ? (
+                <Link
+                  href={`/reserve/${slug}?date=${day}T${time.time}&partySize=${partySize}`}
+                  className="bg-red-600 cursor-pointer p-2 w-24 text-center text-white mb-3 rounded mr-3"
+                >
+                  <p className="text-sm font-bold">
+                    {convertToDisplayTime(time.time as Time)}
+                  </p>
+                </Link>
+              ) : (
+                <p className="bg-gray-300 p-2 w-24 mb-3 rounded mr-3 "></p>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
